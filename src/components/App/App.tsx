@@ -8,21 +8,22 @@ import ImageGallery from '../ImageGallery/ImageGallery';
 import LoadMoreBtn from '../LoadMoreBtn/LoadMoreBtn';
 import ImageModal from '../ImageModal/ImageModal';
 import { getImagesWithTopic } from '../../ApiService/images-api';
+import { Image } from '../../types';
 
 Modal.setAppElement('#root');
 
 function App() {
-  const [images, setImages] = useState([]);
-  const [query, setQuery] = useState('');
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isEmpty, setIsEmpty] = useState(false);
-  const [modalIsOpen, setIsOpen] = useState(false);
-  const [selectImage, setSelectImage] = useState(null);
+  const [images, setImages] = useState<Image[]>([]);
+  const [query, setQuery] = useState<string>('');
+  const [page, setPage] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [isEmpty, setIsEmpty] = useState<boolean>(false);
+  const [modalIsOpen, setIsOpen] = useState<boolean>(false);
+  const [selectImage, setSelectImage] = useState<Image | null>(null);
 
-  function openModal(image) {
+  function openModal(image: Image) {
     setSelectImage(image);
     setIsOpen(true);
   }
@@ -38,14 +39,22 @@ function App() {
     const fetchMoreImages = async () => {
       setLoading(true);
       try {
-        const { total_pages, results } = await getImagesWithTopic(query, page);
+        // * не забудь що передаєш в getImagesWithTopic ОБʼЄКТ!!
+
+        const { total_pages, results } = await getImagesWithTopic({
+          query,
+          page,
+        });
 
         if (!results.length) {
           setIsEmpty(true);
           return;
         }
 
-        setImages(prevImages => [...prevImages, ...results]);
+        setImages((prevImages: Image[]): Image[] => [
+          ...prevImages,
+          ...results,
+        ]);
         setIsVisible(page < total_pages);
       } catch {
         setError(true);
@@ -57,7 +66,7 @@ function App() {
     fetchMoreImages();
   }, [page, query]);
 
-  const GetQuery = inputValue => {
+  const GetQuery = (inputValue: string): void => {
     setQuery(inputValue);
     setImages([]);
     setPage(1);
